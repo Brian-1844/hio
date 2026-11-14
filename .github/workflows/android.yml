@@ -1,0 +1,100 @@
+# Construit automatiquement l'APK Android de Hiʻo Video à chaque modification,
+# puis le publie dans « Releases » (le bouton de mise à jour de l'app le trouve là).
+name: Construire l'APK Android
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Préparer le projet Android (Capacitor)
+        run: |
+          VERSION=$(node -p "require('./version.json').version")
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          mkdir -p build/www
+          cp index.html manifest.json version.json icon-192.png icon-512.png build/www/
+          cp -r assets build/assets
+          cd build
+          node -e "require('fs').writeFileSync('www/build.json', JSON.stringify({build: ${{ github.run_number }}, version: '$VERSION'}))"
+          node -e "require('fs').writeFileSync('capacitor.config.json', JSON.stringify({appId: 'pf.brigato.hiovideo', appName: 'Hiʻo Video', webDir: 'www'}, null, 2))"
+          npm init -y > /dev/null
+          npm install @capacitor/core@7 @capacitor/cli@7 @capacitor/android@7 @capacitor/filesystem@7 @capacitor/share@7
+          npm install @mediapipe/tasks-vision@0.10.14
+          mkdir -p www/mediapipe www/models
+          cp node_modules/@mediapipe/tasks-vision/vision_bundle.mjs www/mediapipe/
+          cp -r node_modules/@mediapipe/tasks-vision/wasm www/mediapipe/wasm
+          curl -fsSL -o www/models/face_landmarker.task https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task || echo "modele visage : en ligne"
+          curl -fsSL -o www/models/selfie_multiclass_256x256.tflite https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_multiclass_256x256/float32/latest/selfie_multiclass_256x256.tflite || echo "modele silhouette : en ligne"
+          ls -la www/models
+          npx cap add android
+
+      - name: Autorisations (caméra, micro, GPS) et numéro de version
+        working-directory: build
+        run: |
+          M=android/app/src/main/AndroidManifest.xml
+          sed -i 's#</manifest>#    <uses-permission android:name="android.permission.CAMERA" />\n    <uses-permission android:name="android.permission.RECORD_AUDIO" />\n    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />\n    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />\n    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />\n    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" />\n    <uses-feature android:name="android.hardware.camera" android:required="false" />\n</manifest>#' "$M"
+          G=android/app/build.gradle
+          sed -i "s/versionCode [0-9]*/versionCode ${{ github.run_number }}/" "$G"
+          sed -i "s/versionName \"[^\"]*\"/versionName \"$VERSION\"/" "$G"
+          grep -n "version" "$G"
+
+      - name: Icône de l'app
+        working-directory: build
+        continue-on-error: true
+        run: npx --yes @capacitor/assets@3 generate --android --iconBackgroundColor '#0b0b0d' --splashBackgroundColor '#0b0b0d' --splashBackgroundColorDark '#0b0b0d'
+
+      - name: Construire l'APK
+        working-directory: build
+        run: |
+          npx cap sync android
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon
+
+      - name: Signer l'APK
+        working-directory: build/android
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        run: |
+          KS="$GITHUB_WORKSPACE/android/hio-video.jks"; PASS="hiovideo2026"
+          if [ -n "$KEYSTORE_BASE64" ]; then echo "$KEYSTORE_BASE64" | base64 -d > /tmp/ks.jks; KS=/tmp/ks.jks; PASS="$KEYSTORE_PASSWORD"; fi
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          "$BT/zipalign" -p -f 4 app/build/outputs/apk/release/app-release-unsigned.apk /tmp/aligned.apk
+          "$BT/apksigner" sign --ks "$KS" --ks-pass "pass:$PASS" --key-pass "pass:$PASS" --ks-key-alias hio --out "$GITHUB_WORKSPACE/hio-video.apk" /tmp/aligned.apk
+          "$BT/apksigner" verify "$GITHUB_WORKSPACE/hio-video.apk"
+
+      - name: Garder l'APK dans les fichiers du build
+        uses: actions/upload-artifact@v4
+        with:
+          name: hio-video-apk
+          path: hio-video.apk
+
+      - name: Publier la nouvelle version (Releases)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: Hiʻo Video ${{ env.VERSION }} (build ${{ github.run_number }})
+          body: |
+            Nouvelle version de Hiʻo Video.
+            Sur ton téléphone Android : télécharge hio-video.apk puis ouvre-le pour l'installer.
+          files: hio-video.apk
+          make_latest: true
