@@ -11,15 +11,17 @@ Onglet **🪄 Magie** pour les photos (visage détecté par IA) : rajeunir, viei
 (gros yeux, grosse tête, nez de clown, moustache, lunettes, couronne de fleurs, oreilles de chat,
 extraterrestre), aura colorée, et changement de fond (flou, plage de Tahiti, coucher de soleil,
 nuit étoilée, studio, couleur, ta photo, sans fond). Dans l'APK, l'IA marche même sans internet.
+Mode **3D** : rafale de photos en tournant autour d'un objet, exportée en fichier ZIP pour créer un
+modèle 3D (RealityScan, Polycam, Meshroom, Tripo). Zoom avec deux doigts sur les photos.
 Partage direct vers WhatsApp, Facebook, etc., bouton de mise à jour, et bouton pour installer
 l'icône sur l'écran d'accueil.
 
-- **Version web** : https://brian-1844.github.io/hio-video/
-- **App Android (APK)** : https://github.com/Brian-1844/hio-video/releases/latest/download/hio-video.apk
+- **Version web** : https://brian-1844.github.io/hio/
+- **App Android (APK)** : https://github.com/Brian-1844/hio/releases/latest/download/hio-video.apk
 
 ## Mettre en ligne (une seule fois)
 
-1. Sur GitHub, crée un dépôt **public** nommé `hio-video`.
+1. Sur GitHub, crée un dépôt **public** nommé `hio`.
 2. Envoie tous les fichiers de ce dossier (dont le dossier caché `.github`).
 3. **Settings → Pages** : Source = *Deploy from a branch*, branche `main`, dossier `/ (root)`.
 4. **Settings → Actions → General → Workflow permissions** : coche *Read and write permissions*.
