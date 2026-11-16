@@ -38,8 +38,10 @@ l'icône sur l'écran d'accueil.
 ## Bon à savoir
 
 - La caméra ne marche que sur une adresse en `https://` (GitHub Pages le fait).
-- L'APK est signé avec la clé `android/hio-video.jks`. **Ne la change pas**, sinon Android refusera
-  d'installer les mises à jour par-dessus l'ancienne version. Pour la cacher plus tard (Play Store),
-  ajoute les secrets `KEYSTORE_BASE64` et `KEYSTORE_PASSWORD` : le build les utilisera à la place.
+- **Clé de signature (obligatoire, secrète)** : dans GitHub, *Settings → Secrets and variables → Actions →
+  New repository secret*, crée `KEYSTORE_BASE64` (contenu du fichier KEYSTORE_BASE64.txt) et
+  `KEYSTORE_PASSWORD` (contenu de KEYSTORE_PASSWORD.txt). Garde aussi le fichier `hio-video-NEW.jks` en
+  lieu sûr (clé USB, Google Drive privé) : sans lui, plus de mises à jour possibles. Ne le mets jamais
+  dans le dépôt.
 - Au premier lancement de l'APK, Android demande d'autoriser l'installation depuis le navigateur,
   puis l'accès à la caméra, au micro et à la position.
