@@ -13,6 +13,17 @@ extraterrestre), aura colorée, et changement de fond (flou, plage de Tahiti, co
 nuit étoilée, studio, couleur, ta photo, sans fond). Dans l'APK, l'IA marche même sans internet.
 Mode **3D** : rafale de photos en tournant autour d'un objet, exportée en fichier ZIP pour créer un
 modèle 3D (RealityScan, Polycam, Meshroom, Tripo). Zoom avec deux doigts sur les photos.
+**Notes sur les photos** : nom, catégorie (plante, fleur, oiseau, insecte…), texte libre, repères
+numérotés posés sur la photo, recherche dans la galerie, partage « avec les annotations », et
+`notes.json` dans la sauvegarde.
+Dans l'APK, chaque photo et vidéo est aussi copiée automatiquement dans la **Galerie du téléphone**
+(album « Hio Video », réglable dans ⋯). Galerie de l'app rangée par jour, avec filtres.
+**Sélection multiple** (bouton ☑ ou appui long dans la galerie) : ZIP pour la 3D, sauvegarde,
+partage (vers Claude, WhatsApp, Drive…) en photos légères ou avec annotations, suppression.
+Tri des photos d'une série 3D avant l'export.
+**Amélioration auto des photos** (netteté, couleurs, luminosité) : proposée après chaque photo,
+automatique ou désactivée (⋯ → Amélioration auto), et bouton dans Retoucher → Couleurs.
+Photos en pleine résolution du capteur quand aucun effet n'est actif.
 Partage direct vers WhatsApp, Facebook, etc., bouton de mise à jour, et bouton pour installer
 l'icône sur l'écran d'accueil.
 
